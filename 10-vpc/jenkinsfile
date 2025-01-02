@@ -15,7 +15,8 @@ pipeline{
             steps{
                 script{
                     withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                        sh 'terraform init --reconfigure'
+                        sh 'cd 10-vpc'
+                        sh 'terraform init -reconfigure'
                     }
                 }
             }
@@ -24,26 +25,27 @@ pipeline{
             steps{
                 script{
                     withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                        sh 'cd 10-vpc'
                         sh 'terraform plan -out=tfplan'
                     }
                 }
             }
         }
-        stage('Terraform Apply'){
-            steps{
-                script{
-                    if(params.Action == 'apply'){
-                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                            sh 'terraform apply -auto-approve tfplan'
-                        }
-                    elif(params.Action == 'destroy'){
-                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                            sh 'terraform destroy -auto-approve'
-                        }
-                    }
-                    }
-                }
-            }
-        }
+        // stage('Terraform Apply'){
+        //     steps{
+        //         script{
+        //             if(params.Action == 'apply'){
+        //                 withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+        //                     sh 'terraform apply -auto-approve tfplan'
+        //                 }
+        //             elif(params.Action == 'destroy'){
+        //                 withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+        //                     sh 'terraform destroy -auto-approve'
+        //                 }
+        //             }
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
