@@ -40,7 +40,7 @@ pipeline{
                 script{
                     if(params.Action == 'apply'){
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                            sh 'terraform apply -auto-approve -out=tfplan'
+                            sh 'terraform apply -auto-approve'
                         }
                     elif(params.Action == 'destroy'){
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
