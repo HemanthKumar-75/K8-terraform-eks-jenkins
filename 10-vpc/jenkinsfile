@@ -15,22 +15,24 @@ pipeline{
             steps{
                 script{
                     withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                        sh 'cd 10-vpc'
-                        sh 'terraform init -reconfigure'
+                        sh """
+                        cd 10-vpc
+                        terraform init -reconfigure
+                        """
                     }
                 }
             }
         }
-        stage('Terraform Plan'){
-            steps{
-                script{
-                    withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-                        sh 'cd 10-vpc'
-                        sh 'terraform plan -out=tfplan'
-                    }
-                }
-            }
-        }
+        // stage('Terraform Plan'){
+        //     steps{
+        //         script{
+        //             withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+        //                 sh 'cd 10-vpc'
+        //                 sh 'terraform plan -out=tfplan'
+        //             }
+        //         }
+        //     }
+        // }
         // stage('Terraform Apply'){
         //     steps{
         //         script{
