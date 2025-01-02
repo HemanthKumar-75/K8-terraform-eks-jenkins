@@ -35,22 +35,22 @@ pipeline{
                 }
             }
         }
-        // stage('Terraform Apply'){
-        //     steps{
-        //         script{
-        //             if(params.Action == 'apply'){
-        //                 withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-        //                     sh 'terraform apply -auto-approve tfplan'
-        //                 }
-        //             elif(params.Action == 'destroy'){
-        //                 withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
-        //                     sh 'terraform destroy -auto-approve'
-        //                 }
-        //             }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Terraform Apply'){
+            steps{
+                script{
+                    if(params.Action == 'apply'){
+                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                            sh 'terraform apply -auto-approve tfplan'
+                        }
+                    elif(params.Action == 'destroy'){
+                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                            sh 'terraform destroy -auto-approve'
+                        }
+                    }
+                    }
+                }
+            }
+        }
     }
     post{
         always {
