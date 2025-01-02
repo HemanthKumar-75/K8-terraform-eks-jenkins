@@ -42,8 +42,9 @@ pipeline{
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
                             sh """
                             cd 10-vpc
-                            terraform apply -auto-approve -out=tfplan
+                            terraform apply "tfplan"
                             """
+                            // terraform apply -auto-approve -out=tfplan
                         }
                     elif(params.Action == 'destroy'){
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
