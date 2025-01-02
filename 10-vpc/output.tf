@@ -2,9 +2,9 @@ output "vpc_id_details" {
   value = module.vpc.vpc_id
 }
 
-output "database_subnet_group" {
-  value = module.vpc.database_subnet_group
-}
+# output "database_subnet_group" {
+#   value = module.vpc.database_subnet_group
+# }
 
 # output "az_info" {
 #   value = module.vpc.az_info
