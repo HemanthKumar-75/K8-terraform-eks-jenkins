@@ -52,4 +52,16 @@ pipeline{
         //     }
         // }
     }
+    post{
+        always {
+            echo "This is post section, it will runs everytime of pipeline triggered"
+            deleteDir()  // this will cleans the directory once the pipeline is completed.
+        }
+        success{
+            echo "This is success section, it will runs when pipeline is success"
+        }
+        failure{
+            echo "This is failure section, it will runs when pipeline is failed"
+        }
+    }
 }
