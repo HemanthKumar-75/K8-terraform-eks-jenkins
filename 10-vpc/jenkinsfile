@@ -1,0 +1,49 @@
+pipeline{
+    agent {
+        label "Agent-1"
+    }
+    options{
+        timeout(time: 20, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        ansiColor('xterm')
+    }
+    parameters{
+        choice(name: 'Action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
+    }
+    stages{
+        stage('Terraform Init'){
+            steps{
+                script{
+                    withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                        sh 'terraform init --reconfigure'
+                    }
+                }
+            }
+        }
+        stage('Terraform Plan'){
+            steps{
+                script{
+                    withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                        sh 'terraform plan -out=tfplan'
+                    }
+                }
+            }
+        }
+        stage('Terraform Apply'){
+            steps{
+                script{
+                    if(params.Action == 'apply'){
+                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                            sh 'terraform apply -auto-approve tfplan'
+                        }
+                    elif(params.Action == 'destroy'){
+                        withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials'){
+                            sh 'terraform destroy -auto-approve'
+                        }
+                    }
+                    }
+                }
+            }
+        }
+    }
+}
