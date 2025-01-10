@@ -1,11 +1,6 @@
-pipeline {
+pipeline{
     agent {
         label "Agent-1"
-    }
-    options {
-        timeout(time: 20, unit: 'MINUTES')
-        disableConcurrentBuilds()
-        ansiColor('xterm')
     }
     parameters {
         choice(name: 'Action', choices: ['apply', 'destroy'], description: 'Select the action to perform')
@@ -16,7 +11,7 @@ pipeline {
                 script {
                     withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
                         sh """
-                        cd 20-sg
+                        cd 30-bastion
                         terraform init -reconfigure
                         """
                     }
@@ -28,7 +23,7 @@ pipeline {
                 script {
                     withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
                         sh """
-                        cd 20-sg
+                        cd 30-bastion
                         terraform plan -out=tfplan
                         """
                     }
@@ -41,14 +36,14 @@ pipeline {
                     if (params.Action == 'apply') {
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
                             sh """
-                            cd 20-sg
+                            cd 30-bastion
                             terraform apply "tfplan"
                             """
                         }
                     } else if (params.Action == 'destroy') {
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
                             sh """
-                            cd 20-sg
+                            cd 30-bastion
                             terraform destroy -auto-approve
                             """
                         }
@@ -56,18 +51,8 @@ pipeline {
                 }
             }
         }
-        stage('Parallel Stages using for loop') {
-            when {
-                expression { params.Action == 'apply' }
-            }
-            for i in [30-bastion, 40-rds, 50-eks, 80-ecr, 60-acm, 70-alb, 90-cdn] {
-                steps {
-                    build job: "${i}/Jenkinsfile", parameters: [choice(name: 'Action', value: params.Action)]
-                }
-            }
-        }
     }
-    post {
+    post{
         always {
             echo "This is post section, it will run every time the pipeline is triggered"
             deleteDir()  // this will clean the directory once the pipeline is completed.

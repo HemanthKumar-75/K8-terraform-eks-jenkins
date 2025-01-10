@@ -30,6 +30,10 @@ else
     echo "You are super user."
 fi
 
+# mysql client installation
+dnf install mysql -y
+VALIDATE $? "mysql client installation"
+
 # docker
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -46,7 +50,6 @@ mv /tmp/eksctl /usr/local/bin
 eksctl version
 VALIDATE $? "eksctl installation"
 
-
 # kubectl
 curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.31.0/2024-09-12/bin/linux/amd64/kubectl
 chmod +x ./kubectl
@@ -57,7 +60,6 @@ VALIDATE $? "kubectl installation"
 git clone https://github.com/ahmetb/kubectx /opt/kubectx
 ln -s /opt/kubectx/kubens /usr/local/bin/kubens
 VALIDATE $? "kubens installation"
-
 
 #Helm
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3

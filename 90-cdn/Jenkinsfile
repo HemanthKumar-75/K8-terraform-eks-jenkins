@@ -1,0 +1,136 @@
+pipeline {
+    agent {
+        label 'Agent-1'
+    }
+    options{
+        timeout(time: 30, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        ansiColor('xterm')
+    }
+    // environment {
+    //     DEBUG = 'true'
+    // }
+
+    parameters {
+        choice(name: 'Action', choices: ['apply', 'destroy'], description: 'Select Action')
+    }
+    stages {
+        stage('Init and Plan') {
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
+                    sh """
+                        cd 90-cdn
+                        terraform init -reconfigure
+                        terraform plan -out=tfplan
+                    """
+                }
+            }
+        }
+
+        stage('Apply or Destroy') {
+            /* input {
+                message "Should we continue to ${params.Action}"
+                ok "Yes, we should."
+            } */
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
+                    sh """
+                        cd 90-cdn
+                        if [ ${params.Action} == 'apply' ]
+                        then
+                            terraform apply -auto-approve tfplan
+                        fi
+                    """
+                }
+            }
+        }
+
+        /* stage('Destroy') {
+            when {
+                expression { params.Action == 'destroy' }
+            }
+            parallel {
+                stage('ECR') {
+                    steps {
+                        build job: '70-ecr', parameters: [string(name: 'Action', value: "destroy")], wait: false
+                    }
+                }
+                stage('ALB') {
+                    steps {
+                        build job: '60-alb', parameters: [string(name: 'Action', value: "destroy")], wait: false
+                    }
+                }
+                stage('EKS') {
+                    steps {
+                        build job: '40-eks', parameters: [string(name: 'Action', value: "destroy")], wait: true
+                    }
+                }
+                stage('Bastion') {
+                    steps {
+                        build job: '20-bastion', parameters: [string(name: 'Action', value: "destroy")], wait: false
+                    }
+                }
+
+            }
+        } */
+        stage('Destroy'){
+            when {
+                expression { params.Action == 'destroy' }
+            }
+            steps{
+                withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
+                    script {
+                        def directories = ['80-cdn', '70-ecr', '60-alb', '50-acm', '40-eks', '30-rds', '20-bastion', '10-sg', '00-vpc']
+                        for (dir in directories) {
+                            echo "Destroying resources in directory: ${dir}"
+                            sh """
+                            cd ${dir}
+                            terraform init -reconfigure
+                            terraform destroy -auto-approve || { echo "Failed to destroy resources in ${dir}"; exit 1; }
+                            cd ..
+                            """
+                        }
+            }
+                }
+            }
+        }
+        /* stage('Sequential') {
+            when {
+                expression { params.Action == 'destroy' }
+            }
+            stages {
+                
+                stage('ACM') {
+                    steps {
+                        build job: '50-acm', parameters: [string(name: 'Action', value: "destroy")], wait: false
+                    }
+                }
+                stage('SG-Destroy'){
+                    steps {
+                        build job: '10-sg', parameters: [string(name: 'Action', value: "destroy")], wait: true
+                    }
+                }
+                stage('VPC-Destroy'){
+                    steps {
+                        build job: '00-vpc', parameters: [string(name: 'Action', value: "destroy")], wait: false
+                    }
+                }
+            }
+                
+        } */
+        
+    }
+
+    post {
+        always{
+            echo "This sections runs always"
+            deleteDir()
+        }
+        success{
+            echo "This section run when pipeline success"
+        }
+        failure{
+            echo "This section run when pipeline failure"
+        }
+    }
+}

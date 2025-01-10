@@ -8,7 +8,7 @@ terraform {
   
   backend "s3" {
     bucket = "hemanthkumar.online"
-    key    = "expense-eks-sg"
+    key    = "expenxe-eks-cdn"
     region = "us-east-1"
     dynamodb_table = "hemanthkumar.online_locking"
   }

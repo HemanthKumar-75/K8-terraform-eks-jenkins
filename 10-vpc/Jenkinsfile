@@ -38,7 +38,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 script {
-                    if (params.Action == 'apply') {
+                    when (params.Action == 'apply') {
                         withAWS(region: 'us-east-1', credentials: 'terraform-aws-credentials') {
                             sh """
                             cd 10-vpc
@@ -54,6 +54,14 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+        stage('Triggering next Job of 20-sg') {
+            when {
+                expression { params.Action == 'apply' }
+            }
+            steps {
+                build job: '20-sg', parameters: [string(name: 'Action', value: 'apply')], wait: false
             }
         }
     }
